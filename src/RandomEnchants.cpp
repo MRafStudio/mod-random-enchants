@@ -21,8 +21,21 @@ public:
     RandomEnchantsPlayer() : PlayerScript("RandomEnchantsPlayer") { }
 
     void OnLogin(Player* player) override {
-       if (sConfigMgr->GetOption<bool>("RandomEnchants.AnnounceOnLogin", true) && sConfigMgr->GetOption<bool>("RandomEnchants.Enable", true))
-            ChatHandler(player->GetSession()).SendSysMessage(sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", "This server is running a RandomEnchants Module.").c_str());
+        if (sConfigMgr->GetOption<bool>("RandomEnchants.AnnounceOnLogin", true) && sConfigMgr->GetOption<bool>("RandomEnchants.Enable", true))
+        {
+            WorldSession* session = player->GetSession();
+            switch (session->GetSessionDbLocaleIndex())
+            {
+            case LOCALE_ruRU:
+            {
+                ChatHandler(player->GetSession()).SendSysMessage(sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", "На сервере запущен модуль | cff4CFF00RandomEnchants | r").c_str());
+                break;
+            }
+            default:
+                ChatHandler(player->GetSession()).SendSysMessage(sConfigMgr->GetOption<std::string>("RandomEnchants.OnLoginMessage", "This server is running the | cff4CFF00RandomEnchants | rmodule.").c_str());
+                break;
+            }
+       }
     }
 
     void OnLootItem(Player* player, Item* item, uint32 /*count*/, ObjectGuid /*lootguid*/) override {
@@ -50,6 +63,9 @@ public:
         if (!sConfigMgr->GetOption<bool>("RandomEnchants.Enable", true)) {
             return;
         }
+        // Locales ruRU / enGB
+        WorldSession* session = player->GetSession();
+
         uint32 Quality = item->GetTemplate()->Quality;
         uint32 Class = item->GetTemplate()->Class;
 
@@ -85,11 +101,20 @@ public:
         }
         ChatHandler chathandle = ChatHandler(player->GetSession());
         if (slotRand[2] != -1)
-            chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 3 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
+            if (session->GetSessionDbLocaleIndex() == LOCALE_ruRU)
+                chathandle.PSendSysMessage("Предмет |cffFF0000 %s |rполучил|cffFF0000 3 |rслучайных свойства!", item->GetTemplate()->Name1.c_str());
+            else
+                chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 3 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
         else if (slotRand[1] != -1)
-            chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 2 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
+            if (session->GetSessionDbLocaleIndex() == LOCALE_ruRU)
+                chathandle.PSendSysMessage("Предмет |cffFF0000 %s |rполучил|cffFF0000 2 |rслучайных свойства!", item->GetTemplate()->Name1.c_str());
+            else
+                chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 2 |rrandom enchantments!", item->GetTemplate()->Name1.c_str());
         else if (slotRand[0] != -1)
-            chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 1 |rrandom enchantment!", item->GetTemplate()->Name1.c_str());
+            if (session->GetSessionDbLocaleIndex() == LOCALE_ruRU)
+                chathandle.PSendSysMessage("Предмет |cffFF0000 %s |rполучил|cffFF0000 1 |rслучайное свойство!", item->GetTemplate()->Name1.c_str());
+            else
+                chathandle.PSendSysMessage("Newly Acquired |cffFF0000 %s |rhas received|cffFF0000 1 |rrandom enchantment!", item->GetTemplate()->Name1.c_str());
     }
 
     int getRandEnchantment(Item* item) {
